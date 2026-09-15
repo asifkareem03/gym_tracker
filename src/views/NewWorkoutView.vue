@@ -15,18 +15,34 @@
         <div class="settings-grid">
           <!-- Workout Date Picker -->
           <div class="form-field">
-            <label class="field-label">Workout Date</label>
-            <el-date-picker
-              v-model="form.workoutDate"
-              type="date"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              :disabled-date="disabledFutureDates"
-              placeholder="Select date"
-              size="large"
-              style="width: 100%;"
-              @change="handleDateSelect"
-            />
+            <div class="field-label-wrapper">
+              <label class="field-label">Workout Date</label>
+              <span class="label-help-tag">Select date to fetch log</span>
+            </div>
+            <div class="date-picker-row">
+              <el-date-picker
+                v-model="form.workoutDate"
+                type="date"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                :disabled-date="disabledFutureDates"
+                placeholder="Select date"
+                size="large"
+                style="flex: 1;"
+                @change="handleDateSelect"
+              />
+              <el-button 
+                type="warning" 
+                plain 
+                size="large" 
+                class="move-date-btn"
+                title="Relocate this workout log to a different date"
+                @click="openMoveDialog"
+              >
+                <el-icon><Calendar /></el-icon>
+                <span>Move Date</span>
+              </el-button>
+            </div>
           </div>
 
           <!-- Day Type -->
@@ -223,6 +239,44 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- Move Workout Log to Another Date Dialog -->
+    <el-dialog
+      v-model="showMoveDialog"
+      title="Move Workout Log to New Date"
+      width="440px"
+      destroy-on-close
+    >
+      <div class="move-dialog-content">
+        <p class="move-desc">
+          Select a new date to relocate this workout log (currently on <strong>{{ formatDate(form.workoutDate) }}</strong>):
+        </p>
+        <el-date-picker
+          v-model="targetMoveDate"
+          type="date"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          :disabled-date="disabledFutureDates"
+          placeholder="Select target date"
+          size="large"
+          style="width: 100%; margin-top: 1rem;"
+        />
+      </div>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showMoveDialog = false">Cancel</el-button>
+          <el-button 
+            type="warning" 
+            :loading="moving" 
+            :disabled="!targetMoveDate || targetMoveDate === form.workoutDate" 
+            @click="executeMoveWorkout"
+          >
+            Confirm & Move
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -237,7 +291,7 @@ import { useAuthStore } from '../stores/authStore.js';
 import { getTodayDateString, formatDate } from '../utils/date.js';
 import ExerciseCard from '../components/ExerciseCard.vue';
 import EmptyState from '../components/EmptyState.vue';
-import { Plus, ArrowUp, ArrowDown } from '@element-plus/icons-vue';
+import { Plus, ArrowUp, ArrowDown, Calendar } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const props = defineProps({
@@ -579,29 +633,148 @@ async function handleSave() {
 }
 
 async function handleDateSelect(newDate) {
-  if (!newDate || isEdit.value) return;
+  if (!newDate) return;
 
   loading.value = true;
   try {
     const existing = await workoutStore.fetchWorkoutByDate(newDate);
-    if (existing) {
-      form.value.dayType = existing.dayType || 'workout';
-      form.value.groupId = existing.groupId || 'chest_triceps';
-      form.value.notes = existing.notes || '';
-      form.value.exercises = (existing.exercises || []).map(ex => ({
-        exerciseName: ex.exerciseName,
-        sets: (ex.sets || []).map(s => ({ ...s })),
-        notes: ex.notes || ''
-      }));
-      ElMessage.success(`Loaded existing workout record for ${formatDate(newDate)}!`);
+    if (existing && (existing.id || existing._id)) {
+      const eId = existing.id || existing._id;
+      if (isEdit.value && eId === props.id) {
+        // Same workout log, do nothing
+        return;
+      }
+      ElMessage.info(`Loaded workout log for ${formatDate(newDate)}`);
+      router.push(`/workout/edit/${eId}`);
     } else {
-      form.value.exercises = [];
-      form.value.notes = '';
+      ElMessage.info(`Switched to ${formatDate(newDate)} (New Log)`);
+      router.push(`/workout/new?date=${newDate}`);
     }
   } catch (err) {
     console.error('Failed to load workout for date:', err);
   } finally {
     loading.value = false;
+  }
+}
+
+function openMoveDialog() {
+  targetMoveDate.value = form.value.workoutDate;
+  showMoveDialog.value = true;
+}
+
+async function executeMoveWorkout() {
+  if (!targetMoveDate.value || targetMoveDate.value === form.value.workoutDate) return;
+  const targetDateStr = targetMoveDate.value;
+  const currentId = props.id;
+
+  moving.value = true;
+  try {
+    const existingTarget = await workoutStore.fetchWorkoutByDate(targetDateStr);
+    const existingTargetId = existingTarget ? (existingTarget.id || existingTarget._id) : null;
+
+    if (existingTarget && existingTargetId && existingTargetId !== currentId) {
+      // Conflict detected!
+      const currentGroup = formatGroupName(form.value.groupId);
+      const targetGroup = formatGroupName(existingTarget.groupId);
+      const targetDateFormatted = formatDate(targetDateStr);
+
+      showMoveDialog.value = false;
+      moving.value = false;
+
+      await ElMessageBox.confirm(
+        `Target date (${targetDateFormatted}) already has a logged workout (${targetGroup}). Moving this workout log (${currentGroup}) will merge all exercises into ${targetDateFormatted}. Since two workout groups are combined, the Workout Group will automatically be set to 'Full Body'. Do you want to proceed?`,
+        'Merge Workouts & Change to Full Body',
+        {
+          confirmButtonText: 'Yes, Merge Workouts',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        }
+      );
+
+      moving.value = true;
+
+      // Combine exercise lists
+      const existingExercises = existingTarget.exercises || [];
+      const currentExercises = form.value.exercises || [];
+
+      const mergedExercises = [...existingExercises];
+      currentExercises.forEach(cEx => {
+        const idx = mergedExercises.findIndex(
+          e => e.exerciseName.toLowerCase() === cEx.exerciseName.toLowerCase()
+        );
+        if (idx !== -1) {
+          const existingSets = mergedExercises[idx].sets || [];
+          const newSets = (cEx.sets || []).map((s, sIdx) => ({
+            ...s,
+            setNumber: existingSets.length + sIdx + 1
+          }));
+          mergedExercises[idx].sets = [...existingSets, ...newSets];
+        } else {
+          mergedExercises.push(cEx);
+        }
+      });
+
+      // Group logic: If different groups, set to full_body
+      let finalGroupId = 'full_body';
+      if (existingTarget.groupId === form.value.groupId) {
+        finalGroupId = form.value.groupId;
+      }
+
+      const mergedNotes = [existingTarget.notes, form.value.notes]
+        .filter(Boolean)
+        .join(' | ');
+
+      // Save merged workout to target date
+      await workoutStore.updateWorkout(existingTargetId, {
+        dayType: 'workout',
+        groupId: finalGroupId,
+        notes: mergedNotes,
+        exercises: mergedExercises
+      });
+
+      // Delete original workout from old date if editing existing
+      if (currentId) {
+        await workoutStore.deleteWorkout(currentId);
+      }
+
+      ElMessage.success(`Merged into ${targetDateFormatted} (Full Body)!`);
+      router.push(`/workout/edit/${existingTargetId}`);
+    } else {
+      // Simple relocation to empty target date
+      if (isEdit.value && currentId) {
+        await workoutStore.updateWorkout(currentId, {
+          workoutDate: targetDateStr,
+          dayType: form.value.dayType,
+          groupId: form.value.groupId,
+          notes: form.value.notes,
+          exercises: form.value.exercises
+        });
+      } else {
+        await workoutStore.saveWorkout({
+          workoutDate: targetDateStr,
+          dayType: form.value.dayType,
+          groupId: form.value.groupId,
+          notes: form.value.notes,
+          exercises: form.value.exercises
+        });
+      }
+
+      ElMessage.success(`Workout moved to ${formatDate(targetDateStr)}!`);
+      showMoveDialog.value = false;
+
+      const updatedRecord = await workoutStore.fetchWorkoutByDate(targetDateStr);
+      if (updatedRecord && (updatedRecord.id || updatedRecord._id)) {
+        router.push(`/workout/edit/${updatedRecord.id || updatedRecord._id}`);
+      } else {
+        router.push('/history');
+      }
+    }
+  } catch (err) {
+    if (err !== 'cancel') {
+      ElMessage.error(err.message || 'Failed to move workout date');
+    }
+  } finally {
+    moving.value = false;
   }
 }
 
@@ -792,6 +965,45 @@ watch(
         font-size: 1.1rem;
         border-radius: 12px;
       }
+    }
+  }
+
+  .field-label-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    .label-help-tag {
+      font-size: 0.7rem;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+  }
+
+  .date-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .move-date-btn {
+      white-space: nowrap;
+      font-weight: 700;
+    }
+  }
+
+  .move-dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .move-desc {
+      font-size: 0.95rem;
+      color: var(--color-text-main);
+      line-height: 1.5;
     }
   }
 
