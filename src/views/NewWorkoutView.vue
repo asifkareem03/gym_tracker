@@ -310,6 +310,10 @@ const saving = ref(false);
 const selectedExToAdd = ref('');
 const allCollapsed = ref(true);
 
+const showMoveDialog = ref(false);
+const targetMoveDate = ref('');
+const moving = ref(false);
+
 const showCustomDialog = ref(false);
 const customExName = ref('');
 const customExGroup = ref('chest_triceps');
