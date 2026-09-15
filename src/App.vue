@@ -22,6 +22,9 @@
     <main class="main-content" :class="{ 'full-width': isAuthRoute }">
       <router-view />
     </main>
+
+    <!-- Vercel Web Analytics -->
+    <Analytics />
   </div>
 </template>
 
@@ -30,6 +33,7 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import AppSidebar from './components/AppSidebar.vue';
 import { Menu, Plus } from '@element-plus/icons-vue';
+import { Analytics } from '@vercel/analytics/vue';
 
 const route = useRoute();
 const mobileSidebarOpen = ref(false);
