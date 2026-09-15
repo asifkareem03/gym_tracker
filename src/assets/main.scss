@@ -1,0 +1,190 @@
+$font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+$font-heading: 'Outfit', 'Inter', sans-serif;
+
+// Color Palette
+$color-bg-app: #f8fafc;
+$color-bg-surface: #ffffff;
+$color-bg-sidebar: #0f172a;
+$color-bg-sidebar-active: #1e293b;
+
+$color-primary: #10b981;
+$color-primary-hover: #059669;
+$color-primary-light: #ecfdf5;
+
+$color-text-main: #0f172a;
+$color-text-muted: #64748b;
+
+$color-border: #e2e8f0;
+$color-border-subtle: #f1f5f9;
+
+// Group Tags
+$group-chest: #10b981;
+$group-back: #3b82f6;
+$group-shoulders: #f59e0b;
+$group-legs: #8b5cf6;
+$group-fullbody: #06b6d4;
+$group-rest: #64748b;
+
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 16px;
+
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+
+:root {
+  --font-primary: #{$font-primary};
+  --font-heading: #{$font-heading};
+  --color-bg-app: #{$color-bg-app};
+  --color-bg-surface: #{$color-bg-surface};
+  --color-bg-sidebar: #{$color-bg-sidebar};
+  --color-bg-sidebar-active: #{$color-bg-sidebar-active};
+  --color-primary: #{$color-primary};
+  --color-primary-hover: #{$color-primary-hover};
+  --color-primary-light: #{$color-primary-light};
+  --color-text-main: #{$color-text-main};
+  --color-text-muted: #{$color-text-muted};
+  --color-border: #{$color-border};
+  --color-border-subtle: #{$color-border-subtle};
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: $font-primary;
+  background-color: $color-bg-app;
+  color: $color-text-main;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: $font-heading;
+    letter-spacing: -0.02em;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+// Custom Scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+
+  &-track {
+    background: transparent;
+  }
+
+  &-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+
+    &:hover {
+      background: #94a3b8;
+    }
+  }
+}
+
+// Card Utility
+.gym-card {
+  background: $color-bg-surface;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  box-shadow: $shadow-sm;
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+}
+
+// Element Plus Custom Overrides
+.el-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  .el-icon {
+    font-size: 1.05em;
+  }
+
+  .el-icon + span,
+  [class*='el-icon'] + span {
+    margin-left: 0 !important;
+  }
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px !important;
+  }
+}
+
+.el-button + .el-button {
+  margin-left: 0 !important;
+}
+
+.el-button--primary {
+  --el-button-bg-color: #{$color-primary};
+  --el-button-border-color: #{$color-primary};
+  --el-button-hover-bg-color: #{$color-primary-hover};
+  --el-button-hover-border-color: #{$color-primary-hover};
+  --el-button-active-bg-color: #{$color-primary-hover};
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.el-dialog {
+  border-radius: $radius-lg !important;
+  overflow: hidden;
+
+  &__header {
+    margin-right: 0 !important;
+    border-bottom: 1px solid $color-border-subtle;
+    padding: 1.25rem 1.5rem !important;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: $color-text-main;
+  }
+}
+
+// Group Badge Tag Styling
+.group-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: capitalize;
+  white-space: nowrap;
+
+  &.all { background-color: #6366f1; }
+  &.chest_triceps { background-color: $group-chest; }
+  &.back_biceps { background-color: $group-back; }
+  &.shoulders_abs { background-color: $group-shoulders; }
+  &.legs { background-color: $group-legs; }
+  &.full_body { background-color: $group-fullbody; }
+  &.rest { background-color: $group-rest; }
+  &.custom { background-color: #6b7280; }
+}
+
+@media (max-width: 768px) {
+  .gym-card {
+    padding: 1rem;
+    border-radius: $radius-md;
+  }
+}
