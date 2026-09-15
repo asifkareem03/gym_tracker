@@ -1,12 +1,12 @@
 <template>
-  <div class="user-profile-container">
+  <div class="user-profile-card">
     <div class="user-info">
       <div class="avatar-badge" :style="{ backgroundColor: user?.avatarColor || '#10B981' }">
         {{ initials }}
       </div>
       <div class="user-details">
-        <div class="user-name">{{ user?.name || 'User' }}</div>
-        <div class="user-email">{{ user?.email || '' }}</div>
+        <div class="user-name" :title="user?.name">{{ user?.name || 'User' }}</div>
+        <div class="user-email" :title="user?.email">{{ user?.email || '' }}</div>
         <div class="user-stats" v-if="totalWorkouts !== undefined">
           <span>💪 {{ totalWorkouts }} Workouts</span>
         </div>
@@ -15,7 +15,7 @@
     <el-button 
       type="danger" 
       plain 
-      size="small" 
+      size="default" 
       class="logout-btn" 
       @click="handleLogout"
       :loading="loading"
@@ -66,14 +66,16 @@ const handleLogout = async () => {
 </script>
 
 <style lang="scss" scoped>
-.user-profile-container {
-  padding: 1rem;
+.user-profile-card {
+  padding: 0.85rem;
   background: #1e293b;
+  border: 1px solid #334155;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   .user-info {
     display: flex;
@@ -81,28 +83,31 @@ const handleLogout = async () => {
     gap: 0.75rem;
 
     .avatar-badge {
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: #ffffff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
       flex-shrink: 0;
     }
 
     .user-details {
-      overflow: hidden;
+      flex: 1;
+      min-width: 0;
 
       .user-name {
         font-weight: 700;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        color: #f8fafc;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.2;
       }
 
       .user-email {
@@ -111,6 +116,7 @@ const handleLogout = async () => {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin-top: 2px;
       }
 
       .user-stats {
@@ -124,11 +130,13 @@ const handleLogout = async () => {
 
   .logout-btn {
     width: 100%;
+    margin-left: 0;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
+    font-weight: 600;
   }
 }
 </style>

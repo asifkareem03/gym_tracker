@@ -1,68 +1,77 @@
 <template>
+  <div 
+    v-if="isOpen" 
+    class="sidebar-backdrop" 
+    @click="$emit('close-mobile')"
+  ></div>
+
   <aside class="sidebar" :class="{ 'mobile-open': isOpen }">
     <div class="sidebar-header">
       <div class="brand">
         <div class="logo-icon">🏋️‍♂️</div>
         <span class="brand-title">GymTracker</span>
       </div>
-      <button class="close-mobile-btn" @click="$emit('close-mobile')">✕</button>
+      <button class="close-mobile-btn" @click="$emit('close-mobile')" aria-label="Close menu">✕</button>
     </div>
 
-    <!-- Navigation Links -->
-    <nav class="nav-menu">
-      <router-link to="/" class="nav-item" exact-active-class="active" @click="$emit('close-mobile')">
-        <el-icon><DataLine /></el-icon>
-        <span>Dashboard</span>
-      </router-link>
+    <!-- Scrollable Navigation Body -->
+    <div class="sidebar-body">
+      <!-- Navigation Links -->
+      <nav class="nav-menu">
+        <router-link to="/" class="nav-item" exact-active-class="active" @click="$emit('close-mobile')">
+          <el-icon><DataLine /></el-icon>
+          <span>Dashboard</span>
+        </router-link>
 
-      <router-link to="/calendar" class="nav-item" active-class="active" @click="$emit('close-mobile')">
-        <el-icon><Calendar /></el-icon>
-        <span>Calendar</span>
-      </router-link>
+        <router-link to="/calendar" class="nav-item" active-class="active" @click="$emit('close-mobile')">
+          <el-icon><Calendar /></el-icon>
+          <span>Calendar</span>
+        </router-link>
 
-      <router-link to="/history" class="nav-item" active-class="active" @click="$emit('close-mobile')">
-        <el-icon><List /></el-icon>
-        <span>Workout History</span>
-      </router-link>
+        <router-link to="/history" class="nav-item" active-class="active" @click="$emit('close-mobile')">
+          <el-icon><List /></el-icon>
+          <span>Workout History</span>
+        </router-link>
 
-      <router-link to="/progress" class="nav-item" active-class="active" @click="$emit('close-mobile')">
-        <el-icon><TrendCharts /></el-icon>
-        <span>Exercise Progress</span>
-      </router-link>
+        <router-link to="/progress" class="nav-item" active-class="active" @click="$emit('close-mobile')">
+          <el-icon><TrendCharts /></el-icon>
+          <span>Exercise Progress</span>
+        </router-link>
 
-      <router-link to="/measurements" class="nav-item" active-class="active" @click="$emit('close-mobile')">
-        <el-icon><ScaleToOriginal /></el-icon>
-        <span>Body Measurements</span>
-      </router-link>
-    </nav>
+        <router-link to="/measurements" class="nav-item" active-class="active" @click="$emit('close-mobile')">
+          <el-icon><ScaleToOriginal /></el-icon>
+          <span>Body Measurements</span>
+        </router-link>
+      </nav>
 
-    <!-- Quick Action -->
-    <div class="quick-action">
-      <router-link to="/workout/new" class="new-workout-btn" @click="$emit('close-mobile')">
-        <el-icon><Plus /></el-icon>
-        <span>New Workout</span>
-      </router-link>
-    </div>
+      <!-- Quick Action -->
+      <div class="quick-action">
+        <router-link to="/workout/new" class="new-workout-btn" @click="$emit('close-mobile')">
+          <el-icon><Plus /></el-icon>
+          <span>New Workout</span>
+        </router-link>
+      </div>
 
-    <!-- Recent 7 Days Quick Preview Widget -->
-    <div class="recent-days-widget" v-if="recentDays.length > 0">
-      <div class="widget-title">Last 7 Days Activity</div>
-      <div class="days-list">
-        <div 
-          v-for="day in recentDays" 
-          :key="day.dateStr" 
-          class="day-item"
-          @click="handleDayClick(day)"
-        >
-          <span class="day-date">{{ day.label }}</span>
-          <span :class="['group-badge', day.workout ? (day.workout.dayType === 'rest' ? 'rest' : day.workout.groupId || 'custom') : 'none']">
-            {{ day.workout ? (day.workout.dayType === 'rest' ? 'Rest Day' : formatGroupName(day.workout.groupId)) : 'Empty' }}
-          </span>
+      <!-- Recent 7 Days Quick Preview Widget -->
+      <div class="recent-days-widget" v-if="recentDays.length > 0">
+        <div class="widget-title">Last 7 Days Activity</div>
+        <div class="days-list">
+          <div 
+            v-for="day in recentDays" 
+            :key="day.dateStr" 
+            class="day-item"
+            @click="handleDayClick(day)"
+          >
+            <span class="day-date">{{ day.label }}</span>
+            <span :class="['group-badge', day.workout ? (day.workout.dayType === 'rest' ? 'rest' : day.workout.groupId || 'custom') : 'none']">
+              {{ day.workout ? (day.workout.dayType === 'rest' ? 'Rest Day' : formatGroupName(day.workout.groupId)) : 'Empty' }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- User Profile Section -->
+    <!-- User Profile Section (Always visible & pinned to bottom) -->
     <div class="sidebar-footer">
       <UserProfile :user="authStore.user" :totalWorkouts="workoutStore.totalWorkoutsCount" />
     </div>
@@ -155,6 +164,10 @@ function handleDayClick(day) {
 </script>
 
 <style lang="scss" scoped>
+.sidebar-backdrop {
+  display: none;
+}
+
 .sidebar {
   width: 280px;
   background-color: var(--color-bg-sidebar);
@@ -162,16 +175,19 @@ function handleDayClick(day) {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   position: fixed;
   left: 0;
   top: 0;
+  bottom: 0;
   z-index: 1000;
   border-right: 1px solid #1e293b;
-  overflow-y: auto;
-  transition: transform 0.3s ease;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   .sidebar-header {
-    padding: 1.25rem 1.5rem;
+    flex-shrink: 0;
+    padding: 1.25rem 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -202,11 +218,24 @@ function handleDayClick(day) {
       color: #94a3b8;
       font-size: 1.25rem;
       cursor: pointer;
+      padding: 0.25rem;
+      line-height: 1;
+
+      &:hover {
+        color: #ffffff;
+      }
     }
   }
 
+  .sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
+  }
+
   .nav-menu {
-    padding: 1rem 0.75rem;
+    padding: 0.75rem 0.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -237,7 +266,7 @@ function handleDayClick(day) {
   }
 
   .quick-action {
-    padding: 0 0.75rem 1rem;
+    padding: 0 0.75rem 0.75rem;
 
     .new-workout-btn {
       display: flex;
@@ -260,23 +289,24 @@ function handleDayClick(day) {
   }
 
   .recent-days-widget {
-    margin: 0.5rem 0.5rem;
+    margin: 0.25rem 0.75rem 0.75rem;
     background: #1e293b;
     border-radius: 10px;
-    padding: 0.5rem;
+    padding: 0.6rem;
 
     .widget-title {
-      font-size: 0.75rem;
+      font-size: 0.725rem;
       font-weight: 700;
       text-transform: uppercase;
       color: #94a3b8;
       margin-bottom: 0.5rem;
+      letter-spacing: 0.03em;
     }
 
     .days-list {
       display: flex;
       flex-direction: column;
-      gap: 0.375rem;
+      gap: 0.35rem;
 
       .day-item {
         display: flex;
@@ -284,7 +314,7 @@ function handleDayClick(day) {
         justify-content: space-between;
         gap: 0.5rem;
         font-size: 0.75rem;
-        padding: 0.3rem 0.3rem;
+        padding: 0.35rem 0.4rem;
         border-radius: 6px;
         cursor: pointer;
         transition: background 0.2s;
@@ -304,7 +334,7 @@ function handleDayClick(day) {
           white-space: nowrap;
           font-size: 0.7rem;
           padding: 0.25rem 0.5rem;
-          width: 125px;
+          width: 120px;
           box-sizing: border-box;
           justify-content: center;
           text-align: center;
@@ -320,20 +350,41 @@ function handleDayClick(day) {
   }
 
   .sidebar-footer {
-    margin-top: auto;
-    padding: 0.75rem;
+    flex-shrink: 0;
+    padding: 0.75rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom, 0px)) 0.75rem;
+    border-top: 1px solid #1e293b;
+    background-color: var(--color-bg-sidebar);
   }
 }
 
 @media (max-width: 1024px) {
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 999;
+  }
+
   .sidebar {
+    width: 290px;
+    max-width: 85vw;
     transform: translateX(-100%);
+    box-shadow: none;
 
     &.mobile-open {
       transform: translateX(0);
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
     }
 
     .sidebar-header {
+      padding-top: max(1rem, env(safe-area-inset-top, 0px));
+
       .close-mobile-btn {
         display: block;
       }
