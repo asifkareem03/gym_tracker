@@ -536,4 +536,42 @@ onMounted(async () => {
     }
   }
 }
+
+@media (max-width: 640px) {
+  .dashboard-view {
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+
+      .new-workout-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .timeline-list {
+      .timeline-card {
+        padding: 0.75rem;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+
+        .timeline-left {
+          width: auto;
+          min-width: 85px;
+        }
+
+        .timeline-center {
+          min-width: 110px;
+          flex: 1;
+        }
+
+        .timeline-right {
+          margin-left: auto;
+          flex-shrink: 0;
+        }
+      }
+    }
+  }
+}
 </style>

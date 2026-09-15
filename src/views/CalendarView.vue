@@ -35,6 +35,7 @@
       v-model="showDetailsModal" 
       title="Day Details" 
       width="480px"
+      custom-class="day-details-dialog"
     >
       <div v-if="selectedDateStr" class="day-details-content">
         <p><strong>Date:</strong> {{ formatDate(selectedDateStr) }}</p>
@@ -205,6 +206,7 @@ onMounted(() => {
 
   .calendar-card {
     padding: 1rem;
+    overflow-x: auto;
   }
 
   .cell-wrapper {
@@ -290,6 +292,46 @@ onMounted(() => {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-view {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+
+      .new-workout-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .calendar-card {
+      padding: 0.5rem;
+    }
+
+    :deep(.el-calendar-table) {
+      .el-calendar-day {
+        padding: 4px 2px !important;
+        height: 48px !important;
+      }
+    }
+
+    :deep(.el-calendar__header) {
+      padding: 0.5rem !important;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      .el-calendar__button-group {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+      }
+    }
   }
 }
 </style>
