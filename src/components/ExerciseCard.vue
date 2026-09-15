@@ -122,8 +122,9 @@
                   :min="0"
                   :max="500"
                   :step="2.5"
-                  size="small"
+                  size="default"
                   controls-position="right"
+                  class="custom-set-input"
                   style="width: 100%;"
                 ></el-input-number>
               </td>
@@ -133,8 +134,9 @@
                   :min="0"
                   :max="200"
                   :step="1"
-                  size="small"
+                  size="default"
                   controls-position="right"
+                  class="custom-set-input"
                   style="width: 100%;"
                 ></el-input-number>
               </td>
@@ -448,6 +450,46 @@ function handleSaveCard() {
 
     .save-card-btn {
       font-weight: 600;
+    }
+  }
+
+  :deep(.custom-set-input) {
+    height: 44px !important;
+
+    .el-input__wrapper {
+      height: 44px !important;
+      padding-left: 8px !important;
+      padding-right: 36px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 0 0 1px #cbd5e1 inset !important;
+
+      .el-input__inner {
+        height: 44px !important;
+        line-height: 44px !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+      }
+    }
+
+    .el-input-number__decrease,
+    .el-input-number__increase {
+      width: 32px !important;
+      height: 20px !important;
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+      font-size: 13px !important;
+      font-weight: 800 !important;
+
+      &:hover {
+        background: #e2e8f0 !important;
+        color: #10b981 !important;
+      }
+    }
+
+    .el-input-number__increase {
+      border-bottom: 1px solid #cbd5e1 !important;
     }
   }
 }

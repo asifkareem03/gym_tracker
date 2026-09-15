@@ -24,9 +24,15 @@
             />
           </el-select>
         </el-form-item>
+
+        <div class="edit-full-log-box">
+          <el-button type="success" plain style="width: 100%; font-weight: 700; height: 42px;" @click="goToFullEdit">
+            <span>🏋️‍♂️ Add & Edit Exercises / Sets Details ➔</span>
+          </el-button>
+        </div>
       </template>
 
-      <el-form-item label="Notes">
+      <el-form-item label="Notes" style="margin-top: 1rem;">
         <el-input
           v-model="form.notes"
           type="textarea"
@@ -47,6 +53,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { formatDate } from '../utils/date.js';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useWorkoutStore } from '../stores/workoutStore.js';
@@ -60,6 +67,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'saved']);
 
 const workoutStore = useWorkoutStore();
+const router = useRouter();
+
 const visible = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
@@ -100,11 +109,24 @@ function handleTypeChange(newType) {
   }
 }
 
+function goToFullEdit() {
+  visible.value = false;
+  const wId = props.workout?.id || props.workout?._id;
+  if (wId) {
+    router.push(`/workout/edit/${wId}`);
+  } else if (props.workout?.workoutDate) {
+    router.push(`/workout/new?date=${props.workout.workoutDate}`);
+  } else {
+    router.push('/workout/new');
+  }
+}
+
 async function handleSave() {
-  if (!props.workout?.id) return;
+  if (!props.workout?.id && !props.workout?._id) return;
+  const targetId = props.workout.id || props.workout._id;
   saving.value = true;
   try {
-    await workoutStore.updateWorkout(props.workout.id, {
+    await workoutStore.updateWorkout(targetId, {
       dayType: form.value.dayType,
       groupId: form.value.groupId,
       notes: form.value.notes
@@ -121,6 +143,10 @@ async function handleSave() {
 </script>
 
 <style lang="scss" scoped>
+.edit-full-log-box {
+  margin: 0.75rem 0;
+}
+
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
