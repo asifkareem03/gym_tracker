@@ -3,6 +3,22 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/auth/:action",
+      "destination": "/api/auth/[action]?action=:action"
+    },
+    {
+      "source": "/api/checkins/:action",
+      "destination": "/api/checkins/[action]?action=:action"
+    },
+    {
+      "source": "/api/measurements/:id",
+      "destination": "/api/measurements?id=:id"
+    },
+    {
+      "source": "/api/workouts/:id",
+      "destination": "/api/workouts?id=:id"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
